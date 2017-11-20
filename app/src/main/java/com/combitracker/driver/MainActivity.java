@@ -25,8 +25,8 @@ public class MainActivity extends AppCompatActivity {
     EditText txUsuario,txContraseña;
     Button btnIngresar;
 
-    FirebaseDatabase firebaseDatabase;
-    DatabaseReference databaseReference;
+    public FirebaseDatabase firebaseDatabase;
+    public DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     String user = dataSnapshot.child("Usuario").getValue().toString();
                     String pass = dataSnapshot.child("Contraseña").getValue().toString();
+                    String key = dataSnapshot.getKey();
 
                         if(user.equals(usuario)){
                             if(pass.equals(contraseña)){
@@ -99,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
                                 i.putExtra("Usuario",user);
                                 i.putExtra("Contraseña",pass);
                                 i.putExtra("RutaPerteneciente",ruta);
+                                i.putExtra("Key",key);
                                 databaseReference.removeEventListener(this);
                                 startActivity(i);
                             }else{
