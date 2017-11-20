@@ -77,13 +77,17 @@ public class MainActivity extends AppCompatActivity {
 
     boolean found=false;
 
+    String usuario;
+    String contraseña;
+    String ruta;
+
     private void logear() {
-        final String usuario = txUsuario.getText().toString();
-        final String contraseña = txContraseña.getText().toString();
-        final String ruta = spinnerRutas.getSelectedItem().toString();
+        usuario = txUsuario.getText().toString();
+        contraseña = txContraseña.getText().toString();
+        ruta = spinnerRutas.getSelectedItem().toString();
 
         if(!usuario.isEmpty() || !contraseña.isEmpty()){
-            databaseReference=databaseReference.child(ruta).child("Combis");
+            databaseReference=firebaseDatabase.getReference("Rutas").child(ruta).child("Combis");
 
 
             databaseReference.addChildEventListener(new ChildEventListener() {
@@ -101,14 +105,12 @@ public class MainActivity extends AppCompatActivity {
                                 i.putExtra("Contraseña",pass);
                                 i.putExtra("RutaPerteneciente",ruta);
                                 i.putExtra("Key",key);
-                                databaseReference.removeEventListener(this);
                                 startActivity(i);
                             }else{
                                 Toast.makeText(MainActivity.this,"Credenciales Incorrectas",Toast.LENGTH_LONG).show();
                                 txContraseña.setText("");
                                 txUsuario.setText("");
                                 spinnerRutas.setSelection(0);
-                                databaseReference.removeEventListener(this);
                             }
                         }
 
@@ -122,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
+                    Toast.makeText(MainActivity.this,"Hola",Toast.LENGTH_LONG).show();
                 }
 
                 @Override
