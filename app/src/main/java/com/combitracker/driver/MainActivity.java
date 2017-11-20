@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 ArrayAdapter adapter = new ArrayAdapter(MainActivity.this,android.R.layout.simple_spinner_item,listaRutas);
                 spinnerRutas.setAdapter(adapter);
+                databaseReference.removeEventListener(this);
             }
 
             @Override
@@ -87,9 +88,8 @@ public class MainActivity extends AppCompatActivity {
             databaseReference.addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    for(DataSnapshot ds:dataSnapshot.getChildren()){
-                        String user = ds.child("Usuario").getValue().toString();
-                        String pass = ds.child("Contraseña").getValue().toString();
+                    String user = dataSnapshot.child("Usuario").getValue().toString();
+                    String pass = dataSnapshot.child("Contraseña").getValue().toString();
 
                         if(user.equals(usuario)){
                             if(pass.equals(contraseña)){
@@ -98,23 +98,23 @@ public class MainActivity extends AppCompatActivity {
                                 i.putExtra("Usuario",user);
                                 i.putExtra("Contraseña",pass);
                                 i.putExtra("RutaPerteneciente",ruta);
+                                databaseReference.removeEventListener(this);
                                 startActivity(i);
-                                break;
                             }else{
                                 Toast.makeText(MainActivity.this,"Credenciales Incorrectas",Toast.LENGTH_LONG).show();
                                 txContraseña.setText("");
                                 txUsuario.setText("");
                                 spinnerRutas.setSelection(0);
+                                databaseReference.removeEventListener(this);
                             }
                         }
-                    }
+
                     if(!found){
                         Toast.makeText(MainActivity.this,"No Existe el Usuario Especificado",Toast.LENGTH_LONG).show();
                     }
                     txUsuario.setText("");
                     txContraseña.setText("");
                     spinnerRutas.setSelection(0);
-                    found=false;
                 }
 
                 @Override
