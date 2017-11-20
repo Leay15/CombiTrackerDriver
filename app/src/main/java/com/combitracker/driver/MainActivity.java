@@ -34,6 +34,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         firebaseDatabase=FirebaseDatabase.getInstance();
+
+        try{
+            firebaseDatabase.setPersistenceEnabled(true);
+        }catch (Exception e){
+
+        }
         spinnerRutas=findViewById(R.id.spRutas);
         txUsuario=findViewById(R.id.txUsuario);
         txContraseña=findViewById(R.id.txContraseña);
@@ -96,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
                     String user = dataSnapshot.child("Usuario").getValue().toString();
                     String pass = dataSnapshot.child("Contraseña").getValue().toString();
                     String key = dataSnapshot.getKey();
+                    String rutaAsignada = dataSnapshot.child("RutaAsignada").getValue().toString();
 
                         if(user.equals(usuario)){
                             if(pass.equals(contraseña)){
@@ -105,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
                                 i.putExtra("Contraseña",pass);
                                 i.putExtra("RutaPerteneciente",ruta);
                                 i.putExtra("Key",key);
+                                i.putExtra("RutaAsignada",rutaAsignada);
                                 startActivity(i);
                             }else{
                                 Toast.makeText(MainActivity.this,"Credenciales Incorrectas",Toast.LENGTH_LONG).show();
@@ -124,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                    Toast.makeText(MainActivity.this,"Hola",Toast.LENGTH_LONG).show();
                 }
 
                 @Override

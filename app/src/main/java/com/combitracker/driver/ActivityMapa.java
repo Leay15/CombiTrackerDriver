@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -34,6 +35,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -41,13 +43,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+
 public class ActivityMapa extends MainActivity
         implements NavigationView.OnNavigationItemSelectedListener,OnMapReadyCallback{
 
     String Usuario,Contraseña,RutaAsignada,RutaPerteneciente,Key;
 
     private double latAct=0.0,lonAct=0.0,latPas=0.0,lonPas=0.0;
-
+    ArrayList<LatLng> coordenadasRuta = new ArrayList<>();
 
     private Marker markCombi;
     private Bitmap bmpN;
@@ -72,16 +77,63 @@ public class ActivityMapa extends MainActivity
         Contraseña=getIntent().getExtras().getString("Contraseña");
         RutaPerteneciente=getIntent().getExtras().getString("RutaPerteneciente");
         Key=getIntent().getExtras().getString("Key");
+        RutaAsignada=getIntent().getExtras().getString("RutaAsignada");
 
         databaseReference=firebaseDatabase.getReference("Rutas").child(RutaPerteneciente);
         bmpN= BitmapFactory.decodeResource(getResources(),R.drawable.bus);
         bmpN=Bitmap.createScaledBitmap(bmpN, bmpN.getWidth()/20,bmpN.getHeight()/20, false);
 
         iniciarHilo();
-
+        leerRuta();
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapa);
         mapFragment.getMapAsync(this);
+    }
+
+    DatabaseReference referenciaAuxiliar;
+    private void leerRuta() {
+
+        referenciaAuxiliar=firebaseDatabase.getReference("Rutas").child(RutaPerteneciente).child("Subrutas");
+        referenciaAuxiliar.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds:dataSnapshot.getChildren()){
+                    if(ds.child("ruta").getValue().toString().equals(RutaAsignada)){
+                        String cord = ds.child("camino").getValue().toString();
+                        interpretarCordenadas(cord);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void interpretarCordenadas(String cord) {
+        StringTokenizer st = new StringTokenizer(cord,"/");
+        StringTokenizer aux;
+
+        while(st.hasMoreTokens()){
+            aux = new StringTokenizer(st.nextToken(),",");
+            Double lat = Double.parseDouble(aux.nextToken());
+            Double lon = Double.parseDouble(aux.nextToken());
+            LatLng cordAux = new LatLng(lat,lon);
+            coordenadasRuta.add(cordAux);
+        }
+
+        cargarCordenadas();
+    }
+
+    private void cargarCordenadas() {
+        PolylineOptions polyLines = new PolylineOptions();
+        polyLines.addAll(coordenadasRuta);
+        polyLines.width(20);
+        polyLines.color(Color.BLUE);
+        googleMap.clear();
+        googleMap.addPolyline(polyLines);
     }
 
     private void iniciarHilo() {
