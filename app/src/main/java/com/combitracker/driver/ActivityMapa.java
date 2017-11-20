@@ -114,8 +114,8 @@ public class ActivityMapa extends MainActivity
 
                 if(latAct!=latPas&&lonAct!=lonPas){
 
-                    databaseReference.child("Combi").child(Key).child("Lat").setValue(latAct+"");
-                    databaseReference.child("Combi").child(Key).child("Lon").setValue(lonAct+"");
+                    databaseReference.child("Combis").child(Key).child("Lat").setValue(latAct+"");
+                    databaseReference.child("Combis").child(Key).child("Lon").setValue(lonAct+"");
 
                     Toast.makeText(ActivityMapa.this, "CAMBIO", Toast.LENGTH_SHORT).show();
                 }
