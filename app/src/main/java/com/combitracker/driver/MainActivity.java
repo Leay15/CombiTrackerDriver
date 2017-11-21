@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -23,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
     Spinner spinnerRutas;
     EditText txUsuario,txContraseña;
-    Button btnIngresar;
+    ImageButton btnIngresar;
 
     public FirebaseDatabase firebaseDatabase;
     public DatabaseReference databaseReference;

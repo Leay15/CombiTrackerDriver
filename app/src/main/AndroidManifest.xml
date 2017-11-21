@@ -27,7 +27,7 @@
         <activity
             android:name=".ActivityMapa"
             android:label="@string/title_activity_mapa"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.AppBarOverlay"></activity>
     </application>
 
 </manifest>

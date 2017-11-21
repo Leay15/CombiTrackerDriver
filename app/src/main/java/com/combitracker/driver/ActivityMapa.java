@@ -104,13 +104,11 @@ public class ActivityMapa extends MainActivity
     }
 
     private void interpretarCordenadas(String cord) {
-        StringTokenizer st = new StringTokenizer(cord,"/");
-        StringTokenizer aux;
+        StringTokenizer st = new StringTokenizer(cord,",");
 
         while(st.hasMoreTokens()){
-            aux = new StringTokenizer(st.nextToken(),",");
-            Double lat = Double.parseDouble(aux.nextToken());
-            Double lon = Double.parseDouble(aux.nextToken());
+            Double lat = Double.parseDouble(st.nextToken());
+            Double lon = Double.parseDouble(st.nextToken());
             LatLng cordAux = new LatLng(lat,lon);
             coordenadasRuta.add(cordAux);
         }
@@ -160,8 +158,6 @@ public class ActivityMapa extends MainActivity
 
                     databaseReference.child("Combis").child(Key).child("Lat").setValue(latAct+"");
                     databaseReference.child("Combis").child(Key).child("Lon").setValue(lonAct+"");
-
-                    Toast.makeText(ActivityMapa.this, "CAMBIO", Toast.LENGTH_SHORT).show();
                 }
 
                 latPas=latAct;
