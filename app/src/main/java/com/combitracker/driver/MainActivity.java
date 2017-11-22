@@ -4,14 +4,11 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -22,7 +19,6 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    Spinner spinnerRutas;
     EditText txUsuario,txContraseña;
     ImageButton btnIngresar;
 
@@ -41,12 +37,11 @@ public class MainActivity extends AppCompatActivity {
         }catch (Exception e){
 
         }
-        spinnerRutas=findViewById(R.id.spRutas);
+
         txUsuario=findViewById(R.id.txUsuario);
         txContraseña=findViewById(R.id.txContraseña);
         btnIngresar=findViewById(R.id.btnIngresar);
 
-        llenarRutas();
         btnIngresar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -54,33 +49,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        spinnerRutas.setSelection(1);
     }
 
     private ArrayList<String> listaRutas = new ArrayList<>();
-
-    private void llenarRutas() {
-        databaseReference=firebaseDatabase.getReference("Rutas");
-
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    listaRutas.add(ds.getKey());
-                }
-                ArrayAdapter adapter = new ArrayAdapter(MainActivity.this,android.R.layout.simple_spinner_item,listaRutas);
-                spinnerRutas.setAdapter(adapter);
-                databaseReference.removeEventListener(this);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-
-    }
 
     boolean found=false;
 
@@ -91,57 +62,45 @@ public class MainActivity extends AppCompatActivity {
     private void logear() {
         usuario = txUsuario.getText().toString();
         contraseña = txContraseña.getText().toString();
-        ruta = spinnerRutas.getSelectedItem().toString();
-
+        Toast.makeText(MainActivity.this,"Espere un Momento Por Favor.",Toast.LENGTH_LONG).show();
         if(!usuario.isEmpty() || !contraseña.isEmpty()){
-            databaseReference=firebaseDatabase.getReference("Rutas").child(ruta).child("Combis");
-
-
-            databaseReference.addChildEventListener(new ChildEventListener() {
+            DatabaseReference buscador = firebaseDatabase.getReference("Rutas");
+            buscador.addValueEventListener(new ValueEventListener() {
+                boolean found = false;
+                String user,pass,key,rutaAsignada,ruta;
                 @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    String user = dataSnapshot.child("Usuario").getValue().toString();
-                    String pass = dataSnapshot.child("Contraseña").getValue().toString();
-                    String key = dataSnapshot.getKey();
-                    String rutaAsignada = dataSnapshot.child("RutaAsignada").getValue().toString();
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for(DataSnapshot ds : dataSnapshot.getChildren()){
+                        if(!found) {
+                            DataSnapshot datos = ds.child("Combis");
+                            for (DataSnapshot combis : datos.getChildren()) {
+                                String us = combis.child("usuario").getValue().toString();
+                                if (us.equals(usuario)) {
+                                    String ps = combis.child("contraseña").getValue().toString();
+                                    if (ps.equals(contraseña)) {
+                                        found = true;
 
-                        if(user.equals(usuario)){
-                            if(pass.equals(contraseña)){
-                                found=true;
-                                Intent i = new Intent(MainActivity.this,ActivityMapa.class);
-                                i.putExtra("Usuario",user);
-                                i.putExtra("Contraseña",pass);
-                                i.putExtra("RutaPerteneciente",ruta);
-                                i.putExtra("Key",key);
-                                i.putExtra("RutaAsignada",rutaAsignada);
-                                startActivity(i);
-                            }else{
-                                Toast.makeText(MainActivity.this,"Credenciales Incorrectas",Toast.LENGTH_LONG).show();
-                                txContraseña.setText("");
-                                txUsuario.setText("");
-                                spinnerRutas.setSelection(0);
+                                        ruta =ds.getKey();
+                                        user = combis.child("usuario").getValue().toString();
+                                        pass = combis.child("contraseña").getValue().toString();
+                                        key = combis.getKey();
+                                        rutaAsignada = combis.child("rutaAsignada").getValue().toString();
+                                        break;
+                                    }
+                                }
                             }
+                        }else{
+                            break;
                         }
 
-                    if(!found){
-                        Toast.makeText(MainActivity.this,"No Existe el Usuario Especificado",Toast.LENGTH_LONG).show();
                     }
                     txUsuario.setText("");
                     txContraseña.setText("");
-                    spinnerRutas.setSelection(0);
-                }
-
-                @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                }
-
-                @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-                }
-
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                    if(found){
+                        abrirActividadMapa(user,pass,key,rutaAsignada,ruta);
+                    }else{
+                        txUsuario.setError("No Existe el Usuario Especificado");
+                    }
 
                 }
 
@@ -152,11 +111,22 @@ public class MainActivity extends AppCompatActivity {
             });
         }else{
             if(usuario.isEmpty()){
-                txUsuario.setError("Ingresa Usuario");
+                txUsuario.setError("Ingresa Email");
             }
             if(contraseña.isEmpty()){
                 txContraseña.setError("Ingresa Contraseña");
             }
         }
+    }
+
+    private void abrirActividadMapa(final String user, final String pass, final String key, final String rutaAsignada, String ruta){
+
+        Intent i = new Intent(MainActivity.this,ActivityMapa.class);
+        i.putExtra("Usuario",user);
+        i.putExtra("Contraseña",pass);
+        i.putExtra("RutaPerteneciente", ruta);
+        i.putExtra("Key",key);
+        i.putExtra("RutaAsignada",rutaAsignada);
+        startActivity(i);
     }
 }

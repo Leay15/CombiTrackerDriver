@@ -156,8 +156,8 @@ public class ActivityMapa extends MainActivity
 
                 if(latAct!=latPas&&lonAct!=lonPas){
 
-                    databaseReference.child("Combis").child(Key).child("Lat").setValue(latAct+"");
-                    databaseReference.child("Combis").child(Key).child("Lon").setValue(lonAct+"");
+                    databaseReference.child("Combis").child(Key).child("lat").setValue(latAct+"");
+                    databaseReference.child("Combis").child(Key).child("lon").setValue(lonAct+"");
                 }
 
                 latPas=latAct;
