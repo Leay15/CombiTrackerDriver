@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         contraseña = txContraseña.getText().toString();
         Toast.makeText(MainActivity.this,"Espere un Momento Por Favor.",Toast.LENGTH_LONG).show();
         if(!usuario.isEmpty() || !contraseña.isEmpty()){
-            DatabaseReference buscador = firebaseDatabase.getReference("Rutas");
+            final DatabaseReference buscador = firebaseDatabase.getReference("Rutas");
             buscador.addValueEventListener(new ValueEventListener() {
                 boolean found = false;
                 String user,pass,key,rutaAsignada,ruta;
@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                     }else{
                         txUsuario.setError("No Existe el Usuario Especificado");
                     }
-
+                    buscador.removeEventListener(this);
                 }
 
                 @Override

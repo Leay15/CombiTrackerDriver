@@ -75,7 +75,6 @@ public class ActivityMapa extends MainActivity
         bmpN=Bitmap.createScaledBitmap(bmpN, bmpN.getWidth()/20,bmpN.getHeight()/20, false);
 
         iniciarHilo();
-        leerRuta();
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapa);
         mapFragment.getMapAsync(this);
@@ -199,12 +198,9 @@ public class ActivityMapa extends MainActivity
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap=googleMap;
-
-        //Crear escuchador de combis
-        seguirCombis();
-
         //Mostrar Ubicacion actual al abrir la app
         miUbicacion();
+        leerRuta();
     }
 
     private void seguirCombis() {
