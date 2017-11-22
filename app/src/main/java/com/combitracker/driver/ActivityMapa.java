@@ -117,8 +117,8 @@ public class ActivityMapa extends MainActivity
 
     private void cargarCordenadas() {
         PolylineOptions polyLines = new PolylineOptions();
+        coordenadasRuta.add(coordenadasRuta.get(0));
         polyLines.addAll(coordenadasRuta);
-        polyLines.add(coordenadasRuta.get(0));
         polyLines.width(20);
         polyLines.color(Color.BLUE);
         googleMap.clear();
