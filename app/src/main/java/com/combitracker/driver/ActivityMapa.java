@@ -63,6 +63,7 @@ public class ActivityMapa extends MainActivity
     ArrayList<LatLng> coordenadasRuta = new ArrayList<>();
 
     private Marker markCombi;
+    private Marker markAux=null;
     private Bitmap bmpN;
 
     @Override
@@ -112,6 +113,7 @@ public class ActivityMapa extends MainActivity
         bmpN= BitmapFactory.decodeResource(getResources(),R.drawable.bus);
         bmpN=Bitmap.createScaledBitmap(bmpN, bmpN.getWidth()/20,bmpN.getHeight()/20, false);
 
+        seguirCombis();
 
         iniciarHilo();
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -289,10 +291,11 @@ public class ActivityMapa extends MainActivity
 
     }
 
-    /*private void seguirCombis() {
+    private void seguirCombis() {
+
         //Obtener combis registradas en la ruta seleccionada
 
-        final Query refCombis=firebaseDatabase.getReference()
+        final Query  refCombis=firebaseDatabase.getReference()
                 .child("Rutas")
                 .child(RutaPerteneciente)
                 .child("Combis");
@@ -301,18 +304,27 @@ public class ActivityMapa extends MainActivity
         refCombis.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot snap, String s) {
-                if(snap!=null&&snap.getValue(Combi.class).getRutaAsignada().equalsIgnoreCase(rutaS)){
-                    aux= snap.getValue(Combi.class);
-                    agregarMarcadorC(Double.parseDouble(aux.getLat()),Double.parseDouble(aux.getLon()),aux.getNumero()+"-"+aux.getRutaAsignada(),markAux);
+                String rutA = snap.child("rutaAsignada").getValue().toString();
+                //aux= snap.getValue(Combi.class);
+                if(snap!=null&&rutA.equalsIgnoreCase(RutaAsignada)){
+                    String lat=snap.child("lat").getValue().toString();
+                    String lon=snap.child("lon").getValue().toString();
+                    String num=snap.child("numero").getValue().toString();
+
+                    agregarMarcadorC(Double.parseDouble(lat),Double.parseDouble(lon),num+"-"+rutA,markAux);
                 }
             }
 
             @Override
             public void onChildChanged(DataSnapshot snap, String s) {
 
-                aux=snap.getValue(Combi.class);
-                agregarMarcadorC(Double.parseDouble(aux.getLat()),Double.parseDouble(aux.getLon()),aux.getNumero()+"-"+aux.getRutaAsignada(),markAux);
-                actualizarUbicacionC(aux);
+                String rutA = snap.child("rutaAsignada").getValue().toString();
+                String lat=snap.child("lat").getValue().toString();
+                String lon=snap.child("lon").getValue().toString();
+                String num=snap.child("numero").getValue().toString();
+
+                agregarMarcadorC(Double.parseDouble(lat),Double.parseDouble(lon),num+"-"+rutA,markAux);
+                actualizarUbicacionC(rutA,lat,lon,num);
             }
 
             @Override
@@ -330,7 +342,34 @@ public class ActivityMapa extends MainActivity
 
             }
         });
-    }*/
+    }
+
+    private ArrayList<Marker> lstMarkers= new ArrayList<>();
+    private void actualizarUbicacionC(String rutA, String lat, String lon, String num) {
+        for(int i=0;i<lstMarkers.size();i++){
+            if(lstMarkers.get(i).getTitle().equalsIgnoreCase(num+"-"+rutA)){
+                agregarMarcadorC(Double.parseDouble(lat),Double.parseDouble(lon),num+"-"+rutA,lstMarkers.get(i));
+                lstMarkers.remove(i);
+
+                break;
+
+            }
+        }
+    }
+
+    private void agregarMarcadorC(double lat, double lon,String title, Marker mark) {
+        LatLng coordenadas = new LatLng(lat, lon);
+
+        if (mark!= null) mark.remove();
+        mark = googleMap.addMarker(new MarkerOptions()
+                .position(coordenadas)
+                .title(title)
+                .icon(BitmapDescriptorFactory.fromBitmap(bmpN)));
+
+        lstMarkers.add(mark);
+
+    }
+
 
     LocationManager locManager;
 
