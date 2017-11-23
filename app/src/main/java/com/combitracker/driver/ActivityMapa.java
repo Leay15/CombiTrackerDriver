@@ -1,6 +1,10 @@
 package com.combitracker.driver;
 
+import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,8 +12,11 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -41,6 +48,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -236,21 +244,75 @@ public class ActivityMapa extends MainActivity
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap=googleMap;
         //Mostrar Ubicacion actual al abrir la app
-        miUbicacion();
-        leerRuta();
+
+
+        if(gpsStatus()){
+            miUbicacion();
+
+        }else{
+            AlertDialog.Builder alerta=new AlertDialog.Builder(this);
+            alerta.setTitle("GPS Desactivado");
+            alerta.setCancelable(false);
+            alerta.setPositiveButton("Activar GPS", new
+                    DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            Intent intent = new
+                                    Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivity(intent);
+                            miUbicacion();
+                        }
+                    });
+            alerta.setNegativeButton("Cancelar", new
+                    DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.cancel();
+                            cerrarApp();
+                        }
+                    });
+            alerta.create();
+            alerta.show();
+        }
     }
 
-    private void seguirCombis() {
-        /*databaseReference.child("Combis").addChildEventListener(new ChildEventListener() {
+    private void cerrarApp() {
+        this.finish();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.FROYO)
+    private boolean gpsStatus() {
+        ContentResolver content = getBaseContext().getContentResolver();
+        boolean gps = Settings.Secure.isLocationProviderEnabled(content, LocationManager.NETWORK_PROVIDER);
+        return gps;
+
+
+    }
+
+    /*private void seguirCombis() {
+        //Obtener combis registradas en la ruta seleccionada
+
+        final Query refCombis=firebaseDatabase.getReference()
+                .child("Rutas")
+                .child(RutaPerteneciente)
+                .child("Combis");
+
+
+        refCombis.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot snap, String s) {
-
+                if(snap!=null&&snap.getValue(Combi.class).getRutaAsignada().equalsIgnoreCase(rutaS)){
+                    aux= snap.getValue(Combi.class);
+                    agregarMarcadorC(Double.parseDouble(aux.getLat()),Double.parseDouble(aux.getLon()),aux.getNumero()+"-"+aux.getRutaAsignada(),markAux);
+                }
             }
 
             @Override
             public void onChildChanged(DataSnapshot snap, String s) {
 
-
+                aux=snap.getValue(Combi.class);
+                agregarMarcadorC(Double.parseDouble(aux.getLat()),Double.parseDouble(aux.getLon()),aux.getNumero()+"-"+aux.getRutaAsignada(),markAux);
+                actualizarUbicacionC(aux);
             }
 
             @Override
@@ -268,9 +330,7 @@ public class ActivityMapa extends MainActivity
 
             }
         });
-
-        */
-    }
+    }*/
 
     LocationManager locManager;
 
