@@ -84,7 +84,7 @@ public class ActivityMapa extends MainActivity
 
         DatabaseReference subrutas = databaseReference.child("Subrutas");
         subrutas.keepSynced(true);
-        subrutas.removeEventListener(new ChildEventListener() {
+        subrutas.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 leerRuta();
@@ -111,29 +111,38 @@ public class ActivityMapa extends MainActivity
             }
         });
         bmpN= BitmapFactory.decodeResource(getResources(),R.drawable.bus);
-        bmpN=Bitmap.createScaledBitmap(bmpN, bmpN.getWidth()/20,bmpN.getHeight()/20, false);
+        bmpN=Bitmap.createScaledBitmap(bmpN, bmpN.getWidth()/10,bmpN.getHeight()/10, false);
 
-        seguirCombis();
+        //seguirCombis();
 
         iniciarHilo();
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapa);
         mapFragment.getMapAsync(this);
+        //leerRuta();
     }
 
+    String cord ="";
     DatabaseReference referenciaAuxiliar;
     private void leerRuta() {
 
         referenciaAuxiliar=firebaseDatabase.getReference("Rutas").child(RutaPerteneciente).child("Subrutas");
         referenciaAuxiliar.addValueEventListener(new ValueEventListener() {
+            String cord2="";
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot ds:dataSnapshot.getChildren()){
                     if(ds.child("ruta").getValue().toString().equals(RutaAsignada)){
-                        String cord = ds.child("camino").getValue().toString();
+                        cord2 = ds.child("camino").getValue().toString();
+                        if(cord.isEmpty() || !cord.equals(cord2)){
+                            cord=cord2;
+                        }
                         interpretarCordenadas(cord);
+                        referenciaAuxiliar.removeEventListener(this);
                     }
                 }
+                cargarCordenadas();
+                miUbicacion();
             }
 
             @Override
@@ -145,15 +154,13 @@ public class ActivityMapa extends MainActivity
 
     private void interpretarCordenadas(String cord) {
         StringTokenizer st = new StringTokenizer(cord,",");
-
+        coordenadasRuta=new ArrayList<>();
         while(st.hasMoreTokens()){
             Double lat = Double.parseDouble(st.nextToken());
             Double lon = Double.parseDouble(st.nextToken());
             LatLng cordAux = new LatLng(lat,lon);
             coordenadasRuta.add(cordAux);
         }
-
-        cargarCordenadas();
     }
 
     private void cargarCordenadas() {
@@ -168,7 +175,6 @@ public class ActivityMapa extends MainActivity
         polyLines.color(Color.parseColor(ColorRecibido));
         googleMap.clear();
         googleMap.addPolyline(polyLines);
-        locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,200,10,location_listener);
 
     }
 
@@ -208,7 +214,6 @@ public class ActivityMapa extends MainActivity
 
                 latPas=latAct;
                 lonPas=lonAct;
-
             }catch (Exception f){
                 Toast.makeText(ActivityMapa.this, "Error en el handler/ "+f.getMessage(), Toast.LENGTH_SHORT).show();
 
@@ -247,8 +252,8 @@ public class ActivityMapa extends MainActivity
         this.googleMap=googleMap;
         //Mostrar Ubicacion actual al abrir la app
 
-
         if(gpsStatus()){
+            leerRuta();
             miUbicacion();
 
         }else{
@@ -291,84 +296,6 @@ public class ActivityMapa extends MainActivity
 
     }
 
-    private void seguirCombis() {
-
-        //Obtener combis registradas en la ruta seleccionada
-
-        final Query  refCombis=firebaseDatabase.getReference()
-                .child("Rutas")
-                .child(RutaPerteneciente)
-                .child("Combis");
-
-
-        refCombis.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot snap, String s) {
-                String rutA = snap.child("rutaAsignada").getValue().toString();
-                //aux= snap.getValue(Combi.class);
-                if(snap!=null&&rutA.equalsIgnoreCase(RutaAsignada)){
-                    String lat=snap.child("lat").getValue().toString();
-                    String lon=snap.child("lon").getValue().toString();
-                    String num=snap.child("numero").getValue().toString();
-
-                    agregarMarcadorC(Double.parseDouble(lat),Double.parseDouble(lon),num+"-"+rutA,markAux);
-                }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot snap, String s) {
-
-                String rutA = snap.child("rutaAsignada").getValue().toString();
-                String lat=snap.child("lat").getValue().toString();
-                String lon=snap.child("lon").getValue().toString();
-                String num=snap.child("numero").getValue().toString();
-
-                agregarMarcadorC(Double.parseDouble(lat),Double.parseDouble(lon),num+"-"+rutA,markAux);
-                actualizarUbicacionC(rutA,lat,lon,num);
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private ArrayList<Marker> lstMarkers= new ArrayList<>();
-    private void actualizarUbicacionC(String rutA, String lat, String lon, String num) {
-        for(int i=0;i<lstMarkers.size();i++){
-            if(lstMarkers.get(i).getTitle().equalsIgnoreCase(num+"-"+rutA)){
-                agregarMarcadorC(Double.parseDouble(lat),Double.parseDouble(lon),num+"-"+rutA,lstMarkers.get(i));
-                lstMarkers.remove(i);
-
-                break;
-
-            }
-        }
-    }
-
-    private void agregarMarcadorC(double lat, double lon,String title, Marker mark) {
-        LatLng coordenadas = new LatLng(lat, lon);
-
-        if (mark!= null) mark.remove();
-        mark = googleMap.addMarker(new MarkerOptions()
-                .position(coordenadas)
-                .title(title)
-                .icon(BitmapDescriptorFactory.fromBitmap(bmpN)));
-
-        lstMarkers.add(mark);
-
-    }
 
 
     LocationManager locManager;
@@ -384,15 +311,14 @@ public class ActivityMapa extends MainActivity
         actualizarUbicacion(location);
         locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,200,10,location_listener);
 
-
-
-
     }
 
     private LocationListener location_listener= new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
+            cargarCordenadas();
             actualizarUbicacion(location);
+
 
         }
 
@@ -412,6 +338,7 @@ public class ActivityMapa extends MainActivity
         }
     };
 
+
     private void actualizarUbicacion(Location location) {
         if (location != null) {
 
@@ -425,7 +352,7 @@ public class ActivityMapa extends MainActivity
 
     private void agregarMarcador(double lat, double lon,String title,BitmapDescriptor icono) {
         LatLng coordenadas = new LatLng(lat, lon);
-        CameraUpdate mPosition = CameraUpdateFactory.newLatLngZoom(coordenadas, 20);
+        CameraUpdate mPosition = CameraUpdateFactory.newLatLngZoom(coordenadas, 14);
         if (markCombi!= null) markCombi.remove();
         markCombi = googleMap.addMarker(new MarkerOptions()
                 .position(coordenadas)

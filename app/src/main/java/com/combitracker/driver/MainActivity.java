@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
         }catch (Exception e){
 
         }
+        DatabaseReference ref = firebaseDatabase.getReference("Rutas");
+        ref.keepSynced(true);
 
         txUsuario=findViewById(R.id.txUsuario);
         txContraseña=findViewById(R.id.txContraseña);
