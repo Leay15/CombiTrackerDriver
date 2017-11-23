@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     EditText txUsuario,txContraseña;
-    ImageButton btnIngresar;
+    ImageView btnIngresar;
 
     public FirebaseDatabase firebaseDatabase;
     public DatabaseReference databaseReference;
@@ -96,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     txUsuario.setText("");
                     txContraseña.setText("");
+                    txUsuario.requestFocus();
                     if(found){
                         abrirActividadMapa(user,pass,key,rutaAsignada,ruta,color);
                     }else{

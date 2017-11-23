@@ -72,6 +72,35 @@ public class ActivityMapa extends MainActivity
         ColorRecibido=getIntent().getExtras().getString("Color");
 
         databaseReference=firebaseDatabase.getReference("Rutas").child(RutaPerteneciente);
+
+        DatabaseReference subrutas = databaseReference.child("Subrutas");
+        subrutas.keepSynced(true);
+        subrutas.removeEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                leerRuta();
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                leerRuta();
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
         bmpN= BitmapFactory.decodeResource(getResources(),R.drawable.bus);
         bmpN=Bitmap.createScaledBitmap(bmpN, bmpN.getWidth()/20,bmpN.getHeight()/20, false);
 
@@ -118,6 +147,10 @@ public class ActivityMapa extends MainActivity
     }
 
     private void cargarCordenadas() {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            return;
+        }
         PolylineOptions polyLines = new PolylineOptions();
         coordenadasRuta.add(coordenadasRuta.get(0));
         polyLines.addAll(coordenadasRuta);
@@ -125,6 +158,8 @@ public class ActivityMapa extends MainActivity
         polyLines.color(Color.parseColor(ColorRecibido));
         googleMap.clear();
         googleMap.addPolyline(polyLines);
+        locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,200,10,location_listener);
+
     }
 
     private void iniciarHilo() {
@@ -237,13 +272,15 @@ public class ActivityMapa extends MainActivity
         */
     }
 
+    LocationManager locManager;
+
     private void miUbicacion(){
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
             return;
         }
 
-        LocationManager locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Location location = locManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         actualizarUbicacion(location);
         locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,200,10,location_listener);
