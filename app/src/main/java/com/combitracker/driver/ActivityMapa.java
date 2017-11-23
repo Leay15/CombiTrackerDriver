@@ -49,7 +49,7 @@ import java.util.StringTokenizer;
 public class ActivityMapa extends MainActivity
         implements OnMapReadyCallback{
 
-    String Usuario,Contraseña,RutaAsignada,RutaPerteneciente,Key;
+    String Usuario,Contraseña,RutaAsignada,RutaPerteneciente,Key,ColorRecibido;
 
     private double latAct=0.0,lonAct=0.0,latPas=0.0,lonPas=0.0;
     ArrayList<LatLng> coordenadasRuta = new ArrayList<>();
@@ -69,10 +69,12 @@ public class ActivityMapa extends MainActivity
         RutaPerteneciente=getIntent().getExtras().getString("RutaPerteneciente");
         Key=getIntent().getExtras().getString("Key");
         RutaAsignada=getIntent().getExtras().getString("RutaAsignada");
+        ColorRecibido=getIntent().getExtras().getString("Color");
 
         databaseReference=firebaseDatabase.getReference("Rutas").child(RutaPerteneciente);
         bmpN= BitmapFactory.decodeResource(getResources(),R.drawable.bus);
         bmpN=Bitmap.createScaledBitmap(bmpN, bmpN.getWidth()/20,bmpN.getHeight()/20, false);
+
 
         iniciarHilo();
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -120,7 +122,7 @@ public class ActivityMapa extends MainActivity
         coordenadasRuta.add(coordenadasRuta.get(0));
         polyLines.addAll(coordenadasRuta);
         polyLines.width(20);
-        polyLines.color(Color.BLUE);
+        polyLines.color(Color.parseColor(ColorRecibido));
         googleMap.clear();
         googleMap.addPolyline(polyLines);
     }
@@ -287,7 +289,7 @@ public class ActivityMapa extends MainActivity
 
     private void agregarMarcador(double lat, double lon,String title,BitmapDescriptor icono) {
         LatLng coordenadas = new LatLng(lat, lon);
-        CameraUpdate mPosition = CameraUpdateFactory.newLatLngZoom(coordenadas, 40);
+        CameraUpdate mPosition = CameraUpdateFactory.newLatLngZoom(coordenadas, 20);
         if (markCombi!= null) markCombi.remove();
         markCombi = googleMap.addMarker(new MarkerOptions()
                 .position(coordenadas)

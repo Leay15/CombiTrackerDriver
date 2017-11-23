@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -57,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
     String usuario;
     String contraseña;
-    String ruta;
+    String color;
 
     private void logear() {
         usuario = txUsuario.getText().toString();
@@ -85,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
                                         pass = combis.child("contraseña").getValue().toString();
                                         key = combis.getKey();
                                         rutaAsignada = combis.child("rutaAsignada").getValue().toString();
+                                        color = ds.child("Color").getValue().toString();
                                         break;
                                     }
                                 }
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                     txUsuario.setText("");
                     txContraseña.setText("");
                     if(found){
-                        abrirActividadMapa(user,pass,key,rutaAsignada,ruta);
+                        abrirActividadMapa(user,pass,key,rutaAsignada,ruta,color);
                     }else{
                         txUsuario.setError("No Existe el Usuario Especificado");
                     }
@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void abrirActividadMapa(final String user, final String pass, final String key, final String rutaAsignada, String ruta){
+    private void abrirActividadMapa(final String user, final String pass, final String key, final String rutaAsignada, String ruta, String color){
 
         Intent i = new Intent(MainActivity.this,ActivityMapa.class);
         i.putExtra("Usuario",user);
@@ -127,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
         i.putExtra("RutaPerteneciente", ruta);
         i.putExtra("Key",key);
         i.putExtra("RutaAsignada",rutaAsignada);
+        i.putExtra("Color",color);
         startActivity(i);
     }
 }
