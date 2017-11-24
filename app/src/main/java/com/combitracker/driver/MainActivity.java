@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -20,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
     EditText txUsuario,txContraseña;
     ImageView btnIngresar;
+    ProgressBar progressBar;
 
     public FirebaseDatabase firebaseDatabase;
     public DatabaseReference databaseReference;
@@ -42,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
         txUsuario=findViewById(R.id.txUsuario);
         txContraseña=findViewById(R.id.txContraseña);
         btnIngresar=findViewById(R.id.btnIngresar);
+        progressBar=findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.INVISIBLE);
 
         btnIngresar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
     private void logear() {
         usuario = txUsuario.getText().toString();
         contraseña = txContraseña.getText().toString();
-        Toast.makeText(MainActivity.this,"Espere un Momento Por Favor.",Toast.LENGTH_LONG).show();
+        progressBar.setVisibility(View.VISIBLE);
         if(!usuario.isEmpty() || !contraseña.isEmpty()){
             final DatabaseReference buscador = firebaseDatabase.getReference("Rutas");
             buscador.addValueEventListener(new ValueEventListener() {
@@ -101,9 +105,12 @@ public class MainActivity extends AppCompatActivity {
                     txUsuario.requestFocus();
                     if(found){
                         abrirActividadMapa(user,pass,key,rutaAsignada,ruta,color);
+                        progressBar.setVisibility(View.INVISIBLE);
                     }else{
                         txUsuario.setError("No Existe el Usuario Especificado");
+                        progressBar.setVisibility(View.INVISIBLE);
                     }
+
                     buscador.removeEventListener(this);
                 }
 
@@ -119,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
             if(contraseña.isEmpty()){
                 txContraseña.setError("Ingresa Contraseña");
             }
+            progressBar.setVisibility(View.INVISIBLE);
         }
     }
 

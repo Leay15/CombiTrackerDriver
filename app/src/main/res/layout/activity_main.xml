@@ -51,6 +51,13 @@
 
         </android.support.design.widget.TextInputLayout>
 
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar"
+            android:layout_gravity="center_horizontal"
+            />
+
         <ImageView
             android:layout_marginTop="20dp"
             android:id="@+id/btnIngresar"
